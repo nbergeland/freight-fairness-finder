@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export const RateComparison = ({ marketAverage }) => {
+export const RateComparison = ({ marketAverage = 0 }) => {
   const [driverRate, setDriverRate] = useState('');
   const [comparison, setComparison] = useState(null);
 
