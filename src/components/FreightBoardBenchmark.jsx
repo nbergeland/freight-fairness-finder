@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,26 +7,32 @@ const fetchFreightBoardData = async (originZip, destinationZip) => {
   // Simulated API call for DAT data only
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve([
-        { name: 'DAT', averageRate: 2.6 },
-      ]);
+      resolve({
+        name: 'DAT',
+        averageRate: 2.6,
+        mileage: 500, // Simulated mileage
+      });
     }, 1000);
   });
 };
 
 export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAverage }) => {
-  const { data: freightBoards, isLoading, refetch } = useQuery({
+  const { data: freightBoard, isLoading, refetch } = useQuery({
     queryKey: ['freightBoards', originZip, destinationZip],
     queryFn: () => fetchFreightBoardData(originZip, destinationZip),
     enabled: !!originZip && !!destinationZip,
   });
 
-  const calculateAverageRate = () => {
-    if (!freightBoards || freightBoards.length === 0) return 0;
-    const average = freightBoards[0].averageRate;
-    onUpdateAverage(average);
-    return average.toFixed(2);
+  const calculateTotalCost = () => {
+    if (!freightBoard) return 0;
+    return (freightBoard.averageRate * freightBoard.mileage).toFixed(2);
   };
+
+  React.useEffect(() => {
+    if (freightBoard) {
+      onUpdateAverage(freightBoard.averageRate);
+    }
+  }, [freightBoard, onUpdateAverage]);
 
   return (
     <Card className="mb-8">
@@ -39,28 +45,31 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
         </div>
         {isLoading ? (
           <p>Loading freight board data...</p>
-        ) : (
+        ) : freightBoard ? (
           <>
             <h3 className="font-semibold mb-2">Freight Databoard Used:</h3>
             <ul className="list-disc pl-5 mb-4">
               <li>DAT</li>
             </ul>
             <ul>
-              {freightBoards?.map((board, index) => (
-                <li key={index} className="mb-2">
-                  {board.name}: ${board.averageRate.toFixed(2)} per mile
-                </li>
-              ))}
+              <li className="mb-2">
+                DAT Average Rate: ${freightBoard.averageRate.toFixed(2)} per mile
+              </li>
+              <li className="mb-2">
+                Estimated Mileage: {freightBoard.mileage} miles
+              </li>
+              <li className="mb-2">
+                Total Estimated Cost: ${calculateTotalCost()}
+              </li>
             </ul>
-            <p className="mt-4 font-bold">
-              DAT Average Rate: ${calculateAverageRate()} per mile
-            </p>
             {originZip && destinationZip && (
               <p className="mt-2">
                 For route: {originZip} to {destinationZip}
               </p>
             )}
           </>
+        ) : (
+          <p>No data available</p>
         )}
       </CardContent>
     </Card>
