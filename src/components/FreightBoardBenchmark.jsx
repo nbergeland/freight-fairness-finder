@@ -42,7 +42,7 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
   return (
     <Card className="mb-8">
       <CardHeader>
-        <CardTitle>Freight Board Benchmarks (including DAT)</CardTitle>
+        <CardTitle>Freight Board Benchmarks</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex mb-4">
@@ -59,6 +59,12 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
           <p>Loading freight board data...</p>
         ) : (
           <>
+            <h3 className="font-semibold mb-2">Available Freight Databoards:</h3>
+            <ul className="list-disc pl-5 mb-4">
+              {freightBoards?.map((board) => (
+                <li key={board.name}>{board.name}</li>
+              ))}
+            </ul>
             <ul>
               {filteredFreightBoards?.map((board, index) => (
                 <li key={index} className="mb-2">
