@@ -5,26 +5,48 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const API_KEY = 'YOUR_MAPQUEST_API_KEY'; // Replace with your actual MapQuest API key
 
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c; // Distance in km
+  return d * 0.621371; // Convert to miles
+};
+
+const deg2rad = (deg) => {
+  return deg * (Math.PI / 180);
+};
+
 const fetchFreightBoardData = async (originZip, destinationZip) => {
   try {
-    // Fetch distance data from MapQuest API
-    const distanceResponse = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${originZip}&to=${destinationZip}&unit=m`);
-    const distanceData = await distanceResponse.json();
+    // Fetch geocoding data for origin
+    const originResponse = await fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${originZip}`);
+    const originData = await originResponse.json();
+    const originLat = originData.results[0].locations[0].latLng.lat;
+    const originLng = originData.results[0].locations[0].latLng.lng;
 
-    if (distanceData.route && distanceData.route.distance) {
-      const mileage = Math.round(distanceData.route.distance);
-      
-      // Simulated DAT rate (you would replace this with actual DAT API call)
-      const datRate = 2.6;
+    // Fetch geocoding data for destination
+    const destResponse = await fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${destinationZip}`);
+    const destData = await destResponse.json();
+    const destLat = destData.results[0].locations[0].latLng.lat;
+    const destLng = destData.results[0].locations[0].latLng.lng;
 
-      return {
-        name: 'DAT',
-        averageRate: datRate,
-        mileage: mileage,
-      };
-    } else {
-      throw new Error('Unable to calculate distance');
-    }
+    // Calculate distance using Haversine formula
+    const mileage = Math.round(calculateDistance(originLat, originLng, destLat, destLng));
+
+    // Simulated DAT rate (you would replace this with actual DAT API call)
+    const datRate = 2.6;
+
+    return {
+      name: 'DAT',
+      averageRate: datRate,
+      mileage: mileage,
+    };
   } catch (error) {
     console.error('Error fetching freight board data:', error);
     throw error;
@@ -73,7 +95,7 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
                 DAT Average Rate: ${freightBoard.averageRate.toFixed(2)} per mile
               </li>
               <li className="mb-2">
-                Actual Mileage: {freightBoard.mileage} miles
+                Estimated Mileage: {freightBoard.mileage} miles
               </li>
               <li className="mb-2">
                 Total Estimated Cost: ${calculateTotalCost()}
