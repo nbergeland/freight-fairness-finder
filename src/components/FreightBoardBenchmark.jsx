@@ -12,6 +12,7 @@ const fetchFreightBoardData = async () => {
         { name: 'FreightBoard A', averageRate: 2.5 },
         { name: 'FreightBoard B', averageRate: 2.7 },
         { name: 'FreightBoard C', averageRate: 2.3 },
+        { name: 'DAT', averageRate: 2.6 },
       ]);
     }, 1000);
   });
@@ -29,10 +30,16 @@ export const FreightBoardBenchmark = () => {
     board.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const calculateAverageRate = () => {
+    if (!freightBoards || freightBoards.length === 0) return 0;
+    const sum = freightBoards.reduce((acc, board) => acc + board.averageRate, 0);
+    return (sum / freightBoards.length).toFixed(2);
+  };
+
   return (
     <Card className="mb-8">
       <CardHeader>
-        <CardTitle>Freight Board Benchmarks</CardTitle>
+        <CardTitle>Freight Board Benchmarks (including DAT)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex mb-4">
@@ -48,13 +55,18 @@ export const FreightBoardBenchmark = () => {
         {isLoading ? (
           <p>Loading freight board data...</p>
         ) : (
-          <ul>
-            {filteredFreightBoards?.map((board, index) => (
-              <li key={index} className="mb-2">
-                {board.name}: ${board.averageRate.toFixed(2)} per mile
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul>
+              {filteredFreightBoards?.map((board, index) => (
+                <li key={index} className="mb-2">
+                  {board.name}: ${board.averageRate.toFixed(2)} per mile
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 font-bold">
+              Overall Average Rate: ${calculateAverageRate()} per mile
+            </p>
+          </>
         )}
       </CardContent>
     </Card>

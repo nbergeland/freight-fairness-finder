@@ -3,11 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export const RateComparison = () => {
+export const RateComparison = ({ marketAverage }) => {
   const [driverRate, setDriverRate] = useState('');
   const [comparison, setComparison] = useState(null);
-
-  const marketAverage = 2.5; // This could be dynamically calculated based on FreightBoardBenchmark data
 
   const compareRate = () => {
     const rate = parseFloat(driverRate);
@@ -43,7 +41,7 @@ export const RateComparison = () => {
             Your rate is: <strong>{comparison}</strong>
           </p>
         )}
-        <p className="mt-2">Current market average: ${marketAverage.toFixed(2)} per mile</p>
+        <p className="mt-2">Current market average (including DAT): ${marketAverage.toFixed(2)} per mile</p>
       </CardContent>
     </Card>
   );
