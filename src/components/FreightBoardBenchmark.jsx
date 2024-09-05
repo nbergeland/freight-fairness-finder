@@ -3,21 +3,36 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+const API_KEY = 'YOUR_MAPQUEST_API_KEY'; // Replace with your actual MapQuest API key
+
 const fetchFreightBoardData = async (originZip, destinationZip) => {
-  // Simulated API call for DAT data only
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
+  try {
+    // Fetch distance data from MapQuest API
+    const distanceResponse = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${originZip}&to=${destinationZip}&unit=m`);
+    const distanceData = await distanceResponse.json();
+
+    if (distanceData.route && distanceData.route.distance) {
+      const mileage = Math.round(distanceData.route.distance);
+      
+      // Simulated DAT rate (you would replace this with actual DAT API call)
+      const datRate = 2.6;
+
+      return {
         name: 'DAT',
-        averageRate: 2.6,
-        mileage: 500, // Simulated mileage
-      });
-    }, 1000);
-  });
+        averageRate: datRate,
+        mileage: mileage,
+      };
+    } else {
+      throw new Error('Unable to calculate distance');
+    }
+  } catch (error) {
+    console.error('Error fetching freight board data:', error);
+    throw error;
+  }
 };
 
 export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAverage }) => {
-  const { data: freightBoard, isLoading, refetch } = useQuery({
+  const { data: freightBoard, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['freightBoards', originZip, destinationZip],
     queryFn: () => fetchFreightBoardData(originZip, destinationZip),
     enabled: !!originZip && !!destinationZip,
@@ -45,6 +60,8 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
         </div>
         {isLoading ? (
           <p>Loading freight board data...</p>
+        ) : isError ? (
+          <p>Error: {error.message}</p>
         ) : freightBoard ? (
           <>
             <h3 className="font-semibold mb-2">Freight Databoard Used:</h3>
@@ -56,7 +73,7 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
                 DAT Average Rate: ${freightBoard.averageRate.toFixed(2)} per mile
               </li>
               <li className="mb-2">
-                Estimated Mileage: {freightBoard.mileage} miles
+                Actual Mileage: {freightBoard.mileage} miles
               </li>
               <li className="mb-2">
                 Total Estimated Cost: ${calculateTotalCost()}
