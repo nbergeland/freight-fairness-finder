@@ -59,7 +59,7 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
           <p>Loading freight board data...</p>
         ) : (
           <>
-            <h3 className="font-semibold mb-2">Available Freight Databoards:</h3>
+            <h3 className="font-semibold mb-2">Freight Databoards Used:</h3>
             <ul className="list-disc pl-5 mb-4">
               {freightBoards?.map((board) => (
                 <li key={board.name}>{board.name}</li>
