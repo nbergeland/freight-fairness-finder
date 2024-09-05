@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const fetchFreightBoardData = async () => {
+const fetchFreightBoardData = async (originZip, destinationZip) => {
   // Simulated API call
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -18,12 +18,13 @@ const fetchFreightBoardData = async () => {
   });
 };
 
-export const FreightBoardBenchmark = () => {
+export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAverage }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
   const { data: freightBoards, isLoading, refetch } = useQuery({
-    queryKey: ['freightBoards'],
-    queryFn: fetchFreightBoardData,
+    queryKey: ['freightBoards', originZip, destinationZip],
+    queryFn: () => fetchFreightBoardData(originZip, destinationZip),
+    enabled: !!originZip && !!destinationZip,
   });
 
   const filteredFreightBoards = freightBoards?.filter(board =>
@@ -33,7 +34,9 @@ export const FreightBoardBenchmark = () => {
   const calculateAverageRate = () => {
     if (!freightBoards || freightBoards.length === 0) return 0;
     const sum = freightBoards.reduce((acc, board) => acc + board.averageRate, 0);
-    return (sum / freightBoards.length).toFixed(2);
+    const average = sum / freightBoards.length;
+    onUpdateAverage(average);
+    return average.toFixed(2);
   };
 
   return (
@@ -66,6 +69,11 @@ export const FreightBoardBenchmark = () => {
             <p className="mt-4 font-bold">
               Overall Average Rate: ${calculateAverageRate()} per mile
             </p>
+            {originZip && destinationZip && (
+              <p className="mt-2">
+                For route: {originZip} to {destinationZip}
+              </p>
+            )}
           </>
         )}
       </CardContent>
