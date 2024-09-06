@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const API_KEY = 'YOUR_MAPQUEST_API_KEY'; // Replace with your actual MapQuest API key
 
@@ -39,13 +40,21 @@ const fetchFreightBoardData = async (originZip, destinationZip) => {
     // Calculate distance using Haversine formula
     const mileage = Math.round(calculateDistance(originLat, originLng, destLat, destLng));
 
-    // Simulated DAT rate (you would replace this with actual DAT API call)
-    const datRate = 2.6;
+    // Simulated rates for each freight board (you would replace this with actual API calls)
+    const freightBoards = [
+      { name: 'DAT', averageRate: 2.6 },
+      { name: 'Truckstop.com', averageRate: 2.5 },
+      { name: 'Freightos', averageRate: 2.7 },
+      { name: 'LoadPilot', averageRate: 2.55 },
+      { name: '123LoadBoard', averageRate: 2.65 },
+      { name: 'FreightWaves SONAR', averageRate: 2.58 },
+      { name: 'uShip', averageRate: 2.62 },
+      { name: 'Getloaded.com', averageRate: 2.53 },
+    ];
 
     return {
-      name: 'DAT',
-      averageRate: datRate,
-      mileage: mileage,
+      freightBoards,
+      mileage,
     };
   } catch (error) {
     console.error('Error fetching freight board data:', error);
@@ -54,22 +63,27 @@ const fetchFreightBoardData = async (originZip, destinationZip) => {
 };
 
 export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAverage }) => {
-  const { data: freightBoard, isLoading, isError, error, refetch } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['freightBoards', originZip, destinationZip],
     queryFn: () => fetchFreightBoardData(originZip, destinationZip),
     enabled: !!originZip && !!destinationZip,
   });
 
-  const calculateTotalCost = () => {
-    if (!freightBoard) return 0;
-    return (freightBoard.averageRate * freightBoard.mileage).toFixed(2);
+  const calculateTotalCost = (rate, mileage) => {
+    return (rate * mileage).toFixed(2);
+  };
+
+  const calculateAverageRate = () => {
+    if (!data || !data.freightBoards) return 0;
+    const sum = data.freightBoards.reduce((acc, board) => acc + board.averageRate, 0);
+    return (sum / data.freightBoards.length).toFixed(2);
   };
 
   React.useEffect(() => {
-    if (freightBoard) {
-      onUpdateAverage(freightBoard.averageRate);
+    if (data) {
+      onUpdateAverage(calculateAverageRate());
     }
-  }, [freightBoard, onUpdateAverage]);
+  }, [data, onUpdateAverage]);
 
   return (
     <Card className="mb-8">
@@ -84,23 +98,32 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
           <p>Loading freight board data...</p>
         ) : isError ? (
           <p>Error: {error.message}</p>
-        ) : freightBoard ? (
+        ) : data ? (
           <>
-            <h3 className="font-semibold mb-2">Freight Databoard Used:</h3>
-            <ul className="list-disc pl-5 mb-4">
-              <li>DAT</li>
-            </ul>
-            <ul>
-              <li className="mb-2">
-                DAT Average Rate: ${freightBoard.averageRate.toFixed(2)} per mile
-              </li>
-              <li className="mb-2">
-                Estimated Mileage: {freightBoard.mileage} miles
-              </li>
-              <li className="mb-2">
-                Total Estimated Cost: ${calculateTotalCost()}
-              </li>
-            </ul>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Freight Board</TableHead>
+                  <TableHead>Average Rate (per mile)</TableHead>
+                  <TableHead>Total Estimated Cost</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.freightBoards.map((board) => (
+                  <TableRow key={board.name}>
+                    <TableCell>{board.name}</TableCell>
+                    <TableCell>${board.averageRate.toFixed(2)}</TableCell>
+                    <TableCell>${calculateTotalCost(board.averageRate, data.mileage)}</TableCell>
+                  </TableRow>
+                ))}
+                <TableRow>
+                  <TableCell className="font-bold">Average Across All Boards</TableCell>
+                  <TableCell className="font-bold">${calculateAverageRate()}</TableCell>
+                  <TableCell className="font-bold">${calculateTotalCost(calculateAverageRate(), data.mileage)}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+            <p className="mt-4">Estimated Mileage: {data.mileage} miles</p>
             {originZip && destinationZip && (
               <p className="mt-2">
                 For route: {originZip} to {destinationZip}
