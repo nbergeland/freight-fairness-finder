@@ -46,6 +46,26 @@ Freight Fairness Finder is a React-based web application designed to help freigh
 2. View the calculated mileage and freight board benchmarks
 3. Enter your own rate in the Rate Comparison section to see how it compares to the market average
 
+## Deployment
+
+To deploy the Freight Fairness Finder to a website, follow these steps:
+
+1. Build the project:
+   Run `npm run build` in the project directory. This will create a `dist` folder with the production-ready files.
+
+2. Choose a hosting service:
+   Select a hosting service for static websites. Popular options include:
+   - Netlify
+   - Vercel
+   - GitHub Pages
+
+3. Deploy the built files:
+   - For Netlify or Vercel: Connect your GitHub repository and follow their deployment instructions.
+   - For GitHub Pages: Push the contents of the `dist` folder to a `gh-pages` branch in your repository.
+
+4. Configure your domain:
+   Set up a custom domain if desired, following the instructions provided by your chosen hosting service.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
