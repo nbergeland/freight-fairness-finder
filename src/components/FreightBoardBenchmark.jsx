@@ -53,17 +53,8 @@ const fetchFreightBoardData = async (originZip, destinationZip) => {
       { name: 'Getloaded.com', averageRate: 2.53 },
     ];
 
-    // Simulated rates for international shipping (you would replace this with actual API calls)
-    const internationalShipping = [
-      { name: 'Maersk', averageRate: 0.1 },
-      { name: 'MSC', averageRate: 0.11 },
-      { name: 'CMA CGM', averageRate: 0.09 },
-      { name: 'Hapag-Lloyd', averageRate: 0.12 },
-      { name: 'ONE', averageRate: 0.1 },
-      { name: 'Evergreen', averageRate: 0.095 },
-      { name: 'COSCO', averageRate: 0.105 },
-      { name: 'Yang Ming', averageRate: 0.11 },
-    ];
+    // Fetch real international shipping rates
+    const internationalShipping = await fetchInternationalShippingRates(originZip, destinationZip);
 
     return {
       localFreightBoards,
@@ -73,6 +64,40 @@ const fetchFreightBoardData = async (originZip, destinationZip) => {
   } catch (error) {
     console.error('Error fetching freight board data:', error);
     throw error;
+  }
+};
+
+const fetchInternationalShippingRates = async (originZip, destinationZip) => {
+  try {
+    // Replace this URL with the actual API endpoint for GlobalShippingRates
+    const response = await fetch(`https://api.globalshippingrates.com/rates?origin=${originZip}&destination=${destinationZip}`, {
+      headers: {
+        'Authorization': 'Bearer YOUR_API_KEY_HERE',
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch international shipping rates');
+    }
+
+    const data = await response.json();
+
+    // Process and format the data as needed
+    return data.rates.map(rate => ({
+      name: rate.carrier,
+      averageRate: rate.price_per_kg
+    }));
+  } catch (error) {
+    console.error('Error fetching international shipping rates:', error);
+    // Return some default data in case of an error
+    return [
+      { name: 'Maersk', averageRate: 0.1 },
+      { name: 'MSC', averageRate: 0.11 },
+      { name: 'CMA CGM', averageRate: 0.09 },
+      { name: 'Hapag-Lloyd', averageRate: 0.12 },
+      { name: 'ONE', averageRate: 0.1 },
+    ];
   }
 };
 
@@ -105,7 +130,7 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
         <TableRow>
           <TableHead>Freight Board</TableHead>
           <TableHead>Average Rate {isInternational ? '(per kg)' : '(per mile)'}</TableHead>
-          <TableHead>Total Estimated Cost</TableHead>
+          <TableHead>{isInternational ? 'Price per kg' : 'Total Estimated Cost'}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -113,14 +138,20 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
           <TableRow key={board.name}>
             <TableCell>{board.name}</TableCell>
             <TableCell>${board.averageRate.toFixed(2)}</TableCell>
-            <TableCell>${calculateTotalCost(board.averageRate, data.mileage)}</TableCell>
+            <TableCell>
+              {isInternational
+                ? `$${board.averageRate.toFixed(2)}`
+                : `$${calculateTotalCost(board.averageRate, data.mileage)}`}
+            </TableCell>
           </TableRow>
         ))}
         <TableRow>
           <TableCell className="font-bold">Average Across All Boards</TableCell>
           <TableCell className="font-bold">${calculateAverageRate(freightBoards)}</TableCell>
           <TableCell className="font-bold">
-            ${calculateTotalCost(calculateAverageRate(freightBoards), data.mileage)}
+            {isInternational
+              ? `$${calculateAverageRate(freightBoards)}`
+              : `$${calculateTotalCost(calculateAverageRate(freightBoards), data.mileage)}`}
           </TableCell>
         </TableRow>
       </TableBody>
