@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
-const API_KEY = 'YOUR_MAPQUEST_API_KEY'; // Replace with your actual MapQuest API key
+const API_KEY = 'fzH38On1PdETgqb1EGiDKiUf7sjAmHqw';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Radius of the earth in km
@@ -113,9 +113,6 @@ export const ZipCodeInput = ({ onSearch }) => {
             Estimated mileage from {originZip} to {destinationZip}: <strong>{mileage} miles</strong>
           </p>
         )}
-        <p className="mt-4 text-sm text-gray-500">
-          Note: Make sure to replace 'YOUR_MAPQUEST_API_KEY' in the source code with your actual MapQuest API key.
-        </p>
       </CardContent>
     </Card>
   );
