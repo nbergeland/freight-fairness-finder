@@ -20,6 +20,12 @@ export const RateComparison = ({ marketAverage = 0 }) => {
     }
   };
 
+  const formatMarketAverage = () => {
+    return typeof marketAverage === 'number' && !isNaN(marketAverage)
+      ? marketAverage.toFixed(2)
+      : 'N/A';
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -41,7 +47,7 @@ export const RateComparison = ({ marketAverage = 0 }) => {
             Your rate is: <strong>{comparison}</strong>
           </p>
         )}
-        <p className="mt-2">Current market average (including DAT): ${marketAverage.toFixed(2)} per mile</p>
+        <p className="mt-2">Current market average (including DAT): ${formatMarketAverage()} per mile</p>
       </CardContent>
     </Card>
   );
