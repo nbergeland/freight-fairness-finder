@@ -7,14 +7,16 @@ const Index = () => {
   const [marketAverage, setMarketAverage] = useState(0);
   const [originZip, setOriginZip] = useState('');
   const [destinationZip, setDestinationZip] = useState('');
+  const [mileage, setMileage] = useState(null);
 
   const updateMarketAverage = (newAverage) => {
     setMarketAverage(newAverage);
   };
 
-  const handleZipCodeSearch = (origin, destination) => {
+  const handleZipCodeSearch = (origin, destination, distance) => {
     setOriginZip(origin);
     setDestinationZip(destination);
+    setMileage(distance);
   };
 
   return (
@@ -25,6 +27,7 @@ const Index = () => {
         <FreightBoardBenchmark 
           originZip={originZip} 
           destinationZip={destinationZip} 
+          mileage={mileage}
           onUpdateAverage={updateMarketAverage} 
         />
         <RateComparison marketAverage={marketAverage} />
