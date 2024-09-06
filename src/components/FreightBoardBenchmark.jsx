@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const API_KEY = 'fzH38On1PdETgqb1EGiDKiUf7sjAmHqw';
 
@@ -41,7 +42,7 @@ const fetchFreightBoardData = async (originZip, destinationZip) => {
     const mileage = Math.round(calculateDistance(originLat, originLng, destLat, destLng));
 
     // Simulated rates for each freight board (you would replace this with actual API calls)
-    const freightBoards = [
+    const localFreightBoards = [
       { name: 'DAT', averageRate: 2.6 },
       { name: 'Truckstop.com', averageRate: 2.5 },
       { name: 'Freightos', averageRate: 2.7 },
@@ -52,8 +53,21 @@ const fetchFreightBoardData = async (originZip, destinationZip) => {
       { name: 'Getloaded.com', averageRate: 2.53 },
     ];
 
+    // Simulated rates for international shipping (you would replace this with actual API calls)
+    const internationalShipping = [
+      { name: 'Maersk', averageRate: 0.1 },
+      { name: 'MSC', averageRate: 0.11 },
+      { name: 'CMA CGM', averageRate: 0.09 },
+      { name: 'Hapag-Lloyd', averageRate: 0.12 },
+      { name: 'ONE', averageRate: 0.1 },
+      { name: 'Evergreen', averageRate: 0.095 },
+      { name: 'COSCO', averageRate: 0.105 },
+      { name: 'Yang Ming', averageRate: 0.11 },
+    ];
+
     return {
-      freightBoards,
+      localFreightBoards,
+      internationalShipping,
       mileage,
     };
   } catch (error) {
@@ -73,17 +87,45 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
     return (rate * mileage).toFixed(2);
   };
 
-  const calculateAverageRate = () => {
-    if (!data || !data.freightBoards) return 0;
-    const sum = data.freightBoards.reduce((acc, board) => acc + board.averageRate, 0);
-    return (sum / data.freightBoards.length).toFixed(2);
+  const calculateAverageRate = (freightBoards) => {
+    if (!freightBoards || freightBoards.length === 0) return 0;
+    const sum = freightBoards.reduce((acc, board) => acc + board.averageRate, 0);
+    return (sum / freightBoards.length).toFixed(2);
   };
 
   React.useEffect(() => {
     if (data) {
-      onUpdateAverage(calculateAverageRate());
+      onUpdateAverage(calculateAverageRate(data.localFreightBoards));
     }
   }, [data, onUpdateAverage]);
+
+  const renderFreightTable = (freightBoards, isInternational = false) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Freight Board</TableHead>
+          <TableHead>Average Rate {isInternational ? '(per kg)' : '(per mile)'}</TableHead>
+          <TableHead>Total Estimated Cost</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {freightBoards.map((board) => (
+          <TableRow key={board.name}>
+            <TableCell>{board.name}</TableCell>
+            <TableCell>${board.averageRate.toFixed(2)}</TableCell>
+            <TableCell>${calculateTotalCost(board.averageRate, data.mileage)}</TableCell>
+          </TableRow>
+        ))}
+        <TableRow>
+          <TableCell className="font-bold">Average Across All Boards</TableCell>
+          <TableCell className="font-bold">${calculateAverageRate(freightBoards)}</TableCell>
+          <TableCell className="font-bold">
+            ${calculateTotalCost(calculateAverageRate(freightBoards), data.mileage)}
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  );
 
   return (
     <Card className="mb-8">
@@ -100,29 +142,18 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAvera
           <p>Error: {error.message}</p>
         ) : data ? (
           <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Freight Board</TableHead>
-                  <TableHead>Average Rate (per mile)</TableHead>
-                  <TableHead>Total Estimated Cost</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.freightBoards.map((board) => (
-                  <TableRow key={board.name}>
-                    <TableCell>{board.name}</TableCell>
-                    <TableCell>${board.averageRate.toFixed(2)}</TableCell>
-                    <TableCell>${calculateTotalCost(board.averageRate, data.mileage)}</TableCell>
-                  </TableRow>
-                ))}
-                <TableRow>
-                  <TableCell className="font-bold">Average Across All Boards</TableCell>
-                  <TableCell className="font-bold">${calculateAverageRate()}</TableCell>
-                  <TableCell className="font-bold">${calculateTotalCost(calculateAverageRate(), data.mileage)}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            <Tabs defaultValue="local" className="w-full">
+              <TabsList>
+                <TabsTrigger value="local">Local Freight</TabsTrigger>
+                <TabsTrigger value="international">International Shipping</TabsTrigger>
+              </TabsList>
+              <TabsContent value="local">
+                {renderFreightTable(data.localFreightBoards)}
+              </TabsContent>
+              <TabsContent value="international">
+                {renderFreightTable(data.internationalShipping, true)}
+              </TabsContent>
+            </Tabs>
             <p className="mt-4">Estimated Mileage: {data.mileage} miles</p>
             {originZip && destinationZip && (
               <p className="mt-2">
