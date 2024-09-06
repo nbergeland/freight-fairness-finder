@@ -1,72 +1,55 @@
-# Welcome to your GPT Engineer project
+# Freight Fairness Finder
 
-## Project info
+## Project Overview
 
-**Project**: freight-fairness-finder
+Freight Fairness Finder is a React-based web application designed to help freight carriers and shippers compare rates across multiple freight boards and benchmark their own rates against market averages. This tool provides valuable insights into the current freight market, helping users make informed decisions about pricing and route selection.
 
-**URL**: https://run.gptengineer.app/projects/151f8f54-b718-481e-8ab6-7e9ab51c97ed/improve
+## Key Features
 
-## How can I edit this code?
+1. **Zip Code to Zip Code Search**: Users can input origin and destination zip codes to calculate estimated mileage for their route.
 
-There are several ways of editing your application.
+2. **Freight Board Benchmark**: The app fetches and displays average rates from multiple freight boards, including:
+   - DAT
+   - Truckstop.com
+   - Freightos
+   - LoadPilot
+   - 123LoadBoard
+   - FreightWaves SONAR
+   - uShip
+   - Getloaded.com
 
-**Use GPT Engineer**
+3. **Rate Comparison**: Users can compare their own rates against the calculated market average.
 
-Simply visit the GPT Engineer project at [GPT Engineer](https://gptengineer.app/projects/151f8f54-b718-481e-8ab6-7e9ab51c97ed/improve) and start prompting.
+4. **Mileage Calculation**: The app uses the MapQuest API to calculate accurate mileage between zip codes.
 
-Changes made via gptengineer.app will be committed automatically to this repo.
+5. **Total Cost Estimation**: Based on the mileage and average rates, the app provides estimated total costs for each freight board.
 
-**Use your preferred IDE**
+## Technology Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in the GPT Engineer UI.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
 - React
-- shadcn-ui
+- Vite
 - Tailwind CSS
+- shadcn/ui components
+- React Query for data fetching
+- MapQuest API for geocoding and distance calculation
 
-## How can I deploy this project?
+## Setup and Installation
 
-All GPT Engineer projects can be deployed directly via the GPT Engineer app.
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Replace `YOUR_MAPQUEST_API_KEY` in `src/components/FreightBoardBenchmark.jsx` and `src/components/ZipCodeInput.jsx` with your actual MapQuest API key
+4. Run the development server: `npm run dev`
 
-Simply visit your project at [GPT Engineer](https://gptengineer.app/projects/151f8f54-b718-481e-8ab6-7e9ab51c97ed/improve) and click on Share -> Publish.
+## Usage
 
-## I want to use a custom domain - is that possible?
+1. Enter origin and destination zip codes in the Zip Code Input section
+2. View the calculated mileage and freight board benchmarks
+3. Enter your own rate in the Rate Comparison section to see how it compares to the market average
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.gptengineer.app/tips-tricks/custom-domain/)
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
