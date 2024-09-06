@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const API_KEY = 'YOUR_MAPQUEST_API_KEY'; // Replace with your actual MapQuest API key
 
@@ -35,11 +37,21 @@ export const ZipCodeInput = ({ onSearch }) => {
     try {
       const originResponse = await fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${origin}`);
       const originData = await originResponse.json();
+      
+      if (originData.info.statuscode !== 0) {
+        throw new Error(originData.info.messages[0] || 'Error fetching origin data');
+      }
+      
       const originLat = originData.results[0].locations[0].latLng.lat;
       const originLng = originData.results[0].locations[0].latLng.lng;
 
       const destResponse = await fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${destination}`);
       const destData = await destResponse.json();
+      
+      if (destData.info.statuscode !== 0) {
+        throw new Error(destData.info.messages[0] || 'Error fetching destination data');
+      }
+      
       const destLat = destData.results[0].locations[0].latLng.lat;
       const destLng = destData.results[0].locations[0].latLng.lng;
 
@@ -48,7 +60,11 @@ export const ZipCodeInput = ({ onSearch }) => {
       onSearch(origin, destination, distance);
     } catch (error) {
       console.error('Error fetching mileage:', error);
-      setError('Failed to fetch mileage. Please try again.');
+      if (error.message.includes('AppKey')) {
+        setError('Invalid API key. Please check your MapQuest API key configuration.');
+      } else {
+        setError('Failed to fetch mileage. Please try again or check your zip codes.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -85,12 +101,21 @@ export const ZipCodeInput = ({ onSearch }) => {
             {isLoading ? 'Searching...' : 'Search'}
           </Button>
         </div>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
+        {error && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         {mileage !== null && (
           <p className="mt-4">
             Estimated mileage from {originZip} to {destinationZip}: <strong>{mileage} miles</strong>
           </p>
         )}
+        <p className="mt-4 text-sm text-gray-500">
+          Note: Make sure to replace 'YOUR_MAPQUEST_API_KEY' in the source code with your actual MapQuest API key.
+        </p>
       </CardContent>
     </Card>
   );
