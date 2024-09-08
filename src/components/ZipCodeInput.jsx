@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +12,8 @@ const isInternational = (zip1, zip2) => {
   return !(usZipRegex.test(zip1) && usZipRegex.test(zip2));
 };
 
+const getCacheKey = (origin, destination) => `distance_${origin}_${destination}`;
+
 export const ZipCodeInput = ({ onSearch, topCarrier }) => {
   const [originZip, setOriginZip] = useState('');
   const [destinationZip, setDestinationZip] = useState('');
@@ -19,9 +21,25 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    // Clear mileage when zip codes change
+    setMileage(null);
+  }, [originZip, destinationZip]);
+
   const fetchMileage = async (origin, destination) => {
     setIsLoading(true);
     setError(null);
+
+    const cacheKey = getCacheKey(origin, destination);
+    const cachedDistance = localStorage.getItem(cacheKey);
+
+    if (cachedDistance) {
+      setMileage(parseInt(cachedDistance, 10));
+      setIsLoading(false);
+      onSearch(origin, destination, parseInt(cachedDistance, 10), isInternational(origin, destination));
+      return;
+    }
+
     try {
       const response = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${origin}&to=${destination}&unit=m`);
       const data = await response.json();
@@ -32,6 +50,7 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
       
       const distance = Math.round(data.route.distance);
       setMileage(distance);
+      localStorage.setItem(cacheKey, distance.toString());
       onSearch(origin, destination, distance, isInternational(origin, destination));
     } catch (error) {
       console.error('Error fetching mileage:', error);
