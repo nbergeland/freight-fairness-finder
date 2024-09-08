@@ -22,7 +22,6 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Clear mileage when zip codes change
     setMileage(null);
   }, [originZip, destinationZip]);
 
@@ -45,7 +44,7 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
       const data = await response.json();
       
       if (data.info.statuscode !== 0) {
-        throw new Error('Error fetching route data');
+        throw new Error(data.info.messages[0] || 'Error fetching route data');
       }
       
       const distance = Math.round(data.route.distance);
@@ -54,7 +53,7 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
       onSearch(origin, destination, distance, isInternational(origin, destination));
     } catch (error) {
       console.error('Error fetching mileage:', error);
-      setError(error.message.includes('AppKey') ? 'Invalid API key.' : 'Failed to fetch mileage. Please check your zip codes.');
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
