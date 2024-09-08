@@ -8,20 +8,19 @@ import { AlertCircle } from "lucide-react";
 const API_KEY = 'fzH38On1PdETgqb1EGiDKiUf7sjAmHqw';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Radius of the earth in km
+  const R = 6371;
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const d = R * c; // Distance in km
-  return d * 0.621371; // Convert to miles
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c * 0.621371;
 };
 
-const deg2rad = (deg) => {
-  return deg * (Math.PI / 180);
+const deg2rad = (deg) => deg * (Math.PI/180);
+
+const isInternational = (zip1, zip2) => {
+  const usZipRegex = /^\d{5}(-\d{4})?$/;
+  return !(usZipRegex.test(zip1) && usZipRegex.test(zip2));
 };
 
 export const ZipCodeInput = ({ onSearch }) => {
@@ -35,36 +34,22 @@ export const ZipCodeInput = ({ onSearch }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const originResponse = await fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${origin}`);
-      const originData = await originResponse.json();
+      const [originData, destData] = await Promise.all([
+        fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${origin}`).then(res => res.json()),
+        fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${destination}`).then(res => res.json())
+      ]);
       
-      if (originData.info.statuscode !== 0) {
-        throw new Error(originData.info.messages[0] || 'Error fetching origin data');
+      if (originData.info.statuscode !== 0 || destData.info.statuscode !== 0) {
+        throw new Error('Error fetching location data');
       }
       
-      const originLat = originData.results[0].locations[0].latLng.lat;
-      const originLng = originData.results[0].locations[0].latLng.lng;
-
-      const destResponse = await fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${destination}`);
-      const destData = await destResponse.json();
-      
-      if (destData.info.statuscode !== 0) {
-        throw new Error(destData.info.messages[0] || 'Error fetching destination data');
-      }
-      
-      const destLat = destData.results[0].locations[0].latLng.lat;
-      const destLng = destData.results[0].locations[0].latLng.lng;
-
-      const distance = Math.round(calculateDistance(originLat, originLng, destLat, destLng));
+      const [originLoc, destLoc] = [originData.results[0].locations[0].latLng, destData.results[0].locations[0].latLng];
+      const distance = Math.round(calculateDistance(originLoc.lat, originLoc.lng, destLoc.lat, destLoc.lng));
       setMileage(distance);
-      onSearch(origin, destination, distance);
+      onSearch(origin, destination, distance, isInternational(origin, destination));
     } catch (error) {
       console.error('Error fetching mileage:', error);
-      if (error.message.includes('AppKey')) {
-        setError('Invalid API key. Please check your MapQuest API key configuration.');
-      } else {
-        setError('Failed to fetch mileage. Please try again or check your zip codes.');
-      }
+      setError(error.message.includes('AppKey') ? 'Invalid API key.' : 'Failed to fetch mileage. Please check your zip codes.');
     } finally {
       setIsLoading(false);
     }

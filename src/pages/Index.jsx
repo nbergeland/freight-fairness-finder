@@ -8,15 +8,17 @@ const Index = () => {
   const [originZip, setOriginZip] = useState('');
   const [destinationZip, setDestinationZip] = useState('');
   const [mileage, setMileage] = useState(null);
+  const [isInternational, setIsInternational] = useState(false);
 
   const updateMarketAverage = (newAverage) => {
     setMarketAverage(newAverage);
   };
 
-  const handleZipCodeSearch = (origin, destination, distance) => {
+  const handleZipCodeSearch = (origin, destination, distance, international) => {
     setOriginZip(origin);
     setDestinationZip(destination);
     setMileage(distance);
+    setIsInternational(international);
   };
 
   return (
@@ -28,6 +30,7 @@ const Index = () => {
           originZip={originZip} 
           destinationZip={destinationZip} 
           mileage={mileage}
+          isInternational={isInternational}
           onUpdateAverage={updateMarketAverage} 
         />
         <RateComparison marketAverage={marketAverage} />
