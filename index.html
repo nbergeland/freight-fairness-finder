@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Freight Fairness Finder</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@tanstack/react-query@4.29.5/build/umd/index.production.js"></script>
 </head>
@@ -16,7 +16,11 @@
         const { useState, useEffect } = React;
         const { useQuery } = ReactQuery;
 
-        // ZipCodeInput component
+        const isInternational = (zip1, zip2) => {
+            const usZipRegex = /^\d{5}(-\d{4})?$/;
+            return !(usZipRegex.test(zip1) && usZipRegex.test(zip2));
+        };
+
         const ZipCodeInput = ({ onSearch }) => {
             const [originZip, setOriginZip] = useState('');
             const [destinationZip, setDestinationZip] = useState('');
@@ -28,11 +32,10 @@
                 if (originZip && destinationZip) {
                     setIsLoading(true);
                     setError(null);
-                    // Simulating API call
                     setTimeout(() => {
-                        const distance = Math.floor(Math.random() * 1000) + 100; // Random distance between 100 and 1100 miles
+                        const distance = Math.floor(Math.random() * 1000) + 100;
                         setMileage(distance);
-                        onSearch(originZip, destinationZip, distance);
+                        onSearch(originZip, destinationZip, distance, isInternational(originZip, destinationZip));
                         setIsLoading(false);
                     }, 1000);
                 }
@@ -64,9 +67,7 @@
                             {isLoading ? 'Searching...' : 'Search'}
                         </button>
                     </div>
-                    {error && (
-                        <div className="text-red-500 mt-2">{error}</div>
-                    )}
+                    {error && <div className="text-red-500 mt-2">{error}</div>}
                     {mileage !== null && (
                         <p className="mt-4">
                             Estimated mileage from {originZip} to {destinationZip}: <strong>{mileage} miles</strong>
@@ -76,10 +77,8 @@
             );
         };
 
-        // FreightBoardBenchmark component
-        const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAverage }) => {
+        const FreightBoardBenchmark = ({ originZip, destinationZip, isInternational, onUpdateAverage }) => {
             const fetchFreightBoardData = async () => {
-                // Simulated API call
                 return new Promise((resolve) => {
                     setTimeout(() => {
                         const localFreightBoards = [
@@ -125,7 +124,7 @@
                     >
                         Refresh Data
                     </button>
-                    <div className="overflow-x-auto">
+                    {!isInternational && (
                         <table className="w-full">
                             <thead>
                                 <tr>
@@ -144,31 +143,32 @@
                                 ))}
                             </tbody>
                         </table>
-                    </div>
-                    <h3 className="text-lg font-bold mt-6 mb-2">International Shipping Rates (per kg)</h3>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr>
-                                    <th className="text-left">Shipping Company</th>
-                                    <th className="text-left">Average Rate (per kg)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.internationalShipping.map((company) => (
-                                    <tr key={company.name}>
-                                        <td>{company.name}</td>
-                                        <td>${company.averageRate.toFixed(2)}</td>
+                    )}
+                    {isInternational && (
+                        <>
+                            <h3 className="text-lg font-bold mt-6 mb-2">International Shipping Rates (per kg)</h3>
+                            <table className="w-full">
+                                <thead>
+                                    <tr>
+                                        <th className="text-left">Shipping Company</th>
+                                        <th className="text-left">Average Rate (per kg)</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {data.internationalShipping.map((company) => (
+                                        <tr key={company.name}>
+                                            <td>{company.name}</td>
+                                            <td>${company.averageRate.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </>
+                    )}
                 </div>
             );
         };
 
-        // RateComparison component
         const RateComparison = ({ marketAverage }) => {
             const [driverRate, setDriverRate] = useState('');
             const [comparison, setComparison] = useState(null);
@@ -214,15 +214,16 @@
             );
         };
 
-        // Main App component
         const App = () => {
             const [marketAverage, setMarketAverage] = useState(0);
             const [originZip, setOriginZip] = useState('');
             const [destinationZip, setDestinationZip] = useState('');
+            const [isInternational, setIsInternational] = useState(false);
 
-            const handleZipCodeSearch = (origin, destination) => {
+            const handleZipCodeSearch = (origin, destination, distance, international) => {
                 setOriginZip(origin);
                 setDestinationZip(destination);
+                setIsInternational(international);
             };
 
             return (
@@ -233,6 +234,7 @@
                         <FreightBoardBenchmark
                             originZip={originZip}
                             destinationZip={destinationZip}
+                            isInternational={isInternational}
                             onUpdateAverage={setMarketAverage}
                         />
                         <RateComparison marketAverage={marketAverage} />
@@ -241,7 +243,6 @@
             );
         };
 
-        // Render the App
         ReactDOM.createRoot(document.getElementById('root')).render(
             <React.StrictMode>
                 <ReactQuery.QueryClientProvider client={new ReactQuery.QueryClient()}>
