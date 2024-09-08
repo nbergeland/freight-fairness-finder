@@ -1,16 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>freight-fairness-finder</title>
-    <meta name="description" content="GPT Engineer Generated Project" />
-    <meta name="author" content="GPT Engineer" />
-    <meta property="og:image" content="/og-image.svg" />
-  </head>
-  <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freight Fairness Finder</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@tanstack/react-query@4.29.5/build/umd/index.production.js"></script>
+</head>
+<body>
     <div id="root"></div>
-    <script src="/.gpt_engineer/index.js" type="module"></script>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { useQuery } = ReactQuery;
+
+        // ZipCodeInput component
+        const ZipCodeInput = ({ onSearch }) => {
+            const [originZip, setOriginZip] = useState('');
+            const [destinationZip, setDestinationZip] = useState('');
+            const [mileage, setMileage] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState(null);
+
+            const handleSearch = () => {
+                if (originZip && destinationZip) {
+                    setIsLoading(true);
+                    setError(null);
+                    // Simulating API call
+                    setTimeout(() => {
+                        const distance = Math.floor(Math.random() * 1000) + 100; // Random distance between 100 and 1100 miles
+                        setMileage(distance);
+                        onSearch(originZip, destinationZip, distance);
+                        setIsLoading(false);
+                    }, 1000);
+                }
+            };
+
+            return (
+                <div className="mb-8 p-4 bg-white rounded-lg shadow">
+                    <h2 className="text-xl font-bold mb-4">Zip Code to Zip Code Search</h2>
+                    <div className="flex mb-4">
+                        <input
+                            type="text"
+                            placeholder="Origin Zip Code"
+                            value={originZip}
+                            onChange={(e) => setOriginZip(e.target.value)}
+                            className="mr-2 p-2 border rounded"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Destination Zip Code"
+                            value={destinationZip}
+                            onChange={(e) => setDestinationZip(e.target.value)}
+                            className="mr-2 p-2 border rounded"
+                        />
+                        <button
+                            onClick={handleSearch}
+                            disabled={isLoading}
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        >
+                            {isLoading ? 'Searching...' : 'Search'}
+                        </button>
+                    </div>
+                    {error && (
+                        <div className="text-red-500 mt-2">{error}</div>
+                    )}
+                    {mileage !== null && (
+                        <p className="mt-4">
+                            Estimated mileage from {originZip} to {destinationZip}: <strong>{mileage} miles</strong>
+                        </p>
+                    )}
+                </div>
+            );
+        };
+
+        // FreightBoardBenchmark component
+        const FreightBoardBenchmark = ({ originZip, destinationZip, onUpdateAverage }) => {
+            const fetchFreightBoardData = async () => {
+                // Simulated API call
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const localFreightBoards = [
+                            { name: 'DAT', averageRate: 2.6 },
+                            { name: 'Truckstop.com', averageRate: 2.5 },
+                            { name: 'Freightos', averageRate: 2.7 },
+                            { name: 'LoadPilot', averageRate: 2.55 },
+                        ];
+                        const internationalShipping = [
+                            { name: 'Maersk', averageRate: 0.1 },
+                            { name: 'MSC', averageRate: 0.11 },
+                            { name: 'CMA CGM', averageRate: 0.09 },
+                            { name: 'Hapag-Lloyd', averageRate: 0.12 },
+                        ];
+                        resolve({ localFreightBoards, internationalShipping, mileage: 500 });
+                    }, 1000);
+                });
+            };
+
+            const { data, isLoading, isError, refetch } = useQuery({
+                queryKey: ['freightBoards', originZip, destinationZip],
+                queryFn: fetchFreightBoardData,
+                enabled: !!originZip && !!destinationZip,
+            });
+
+            useEffect(() => {
+                if (data) {
+                    const average = data.localFreightBoards.reduce((acc, board) => acc + board.averageRate, 0) / data.localFreightBoards.length;
+                    onUpdateAverage(average.toFixed(2));
+                }
+            }, [data, onUpdateAverage]);
+
+            if (isLoading) return <div>Loading freight board data...</div>;
+            if (isError) return <div>Error fetching freight board data</div>;
+            if (!data) return null;
+
+            return (
+                <div className="mb-8 p-4 bg-white rounded-lg shadow">
+                    <h2 className="text-xl font-bold mb-4">Freight Board Benchmark</h2>
+                    <button
+                        onClick={() => refetch()}
+                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mb-4"
+                    >
+                        Refresh Data
+                    </button>
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr>
+                                    <th className="text-left">Freight Board</th>
+                                    <th className="text-left">Average Rate (per mile)</th>
+                                    <th className="text-left">Total Estimated Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.localFreightBoards.map((board) => (
+                                    <tr key={board.name}>
+                                        <td>{board.name}</td>
+                                        <td>${board.averageRate.toFixed(2)}</td>
+                                        <td>${(board.averageRate * data.mileage).toFixed(2)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <h3 className="text-lg font-bold mt-6 mb-2">International Shipping Rates (per kg)</h3>
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr>
+                                    <th className="text-left">Shipping Company</th>
+                                    <th className="text-left">Average Rate (per kg)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.internationalShipping.map((company) => (
+                                    <tr key={company.name}>
+                                        <td>{company.name}</td>
+                                        <td>${company.averageRate.toFixed(2)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // RateComparison component
+        const RateComparison = ({ marketAverage }) => {
+            const [driverRate, setDriverRate] = useState('');
+            const [comparison, setComparison] = useState(null);
+
+            const compareRate = () => {
+                const rate = parseFloat(driverRate);
+                if (isNaN(rate)) {
+                    setComparison('Please enter a valid number');
+                } else if (rate > marketAverage) {
+                    setComparison('Above market average');
+                } else if (rate < marketAverage) {
+                    setComparison('Below market average');
+                } else {
+                    setComparison('At market average');
+                }
+            };
+
+            return (
+                <div className="p-4 bg-white rounded-lg shadow">
+                    <h2 className="text-xl font-bold mb-4">Compare Your Rate</h2>
+                    <div className="flex mb-4">
+                        <input
+                            type="number"
+                            placeholder="Enter your rate per mile"
+                            value={driverRate}
+                            onChange={(e) => setDriverRate(e.target.value)}
+                            className="mr-2 p-2 border rounded"
+                        />
+                        <button
+                            onClick={compareRate}
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        >
+                            Compare
+                        </button>
+                    </div>
+                    {comparison && (
+                        <p className="mt-4">
+                            Your rate is: <strong>{comparison}</strong>
+                        </p>
+                    )}
+                    <p className="mt-2">Current market average: ${marketAverage} per mile</p>
+                </div>
+            );
+        };
+
+        // Main App component
+        const App = () => {
+            const [marketAverage, setMarketAverage] = useState(0);
+            const [originZip, setOriginZip] = useState('');
+            const [destinationZip, setDestinationZip] = useState('');
+
+            const handleZipCodeSearch = (origin, destination) => {
+                setOriginZip(origin);
+                setDestinationZip(destination);
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-100 p-8">
+                    <h1 className="text-4xl font-bold mb-8 text-center">Freight Fairness Finder</h1>
+                    <div className="max-w-4xl mx-auto">
+                        <ZipCodeInput onSearch={handleZipCodeSearch} />
+                        <FreightBoardBenchmark
+                            originZip={originZip}
+                            destinationZip={destinationZip}
+                            onUpdateAverage={setMarketAverage}
+                        />
+                        <RateComparison marketAverage={marketAverage} />
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the App
+        ReactDOM.createRoot(document.getElementById('root')).render(
+            <React.StrictMode>
+                <ReactQuery.QueryClientProvider client={new ReactQuery.QueryClient()}>
+                    <App />
+                </ReactQuery.QueryClientProvider>
+            </React.StrictMode>
+        );
+    </script>
+</body>
 </html>
