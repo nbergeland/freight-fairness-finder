@@ -7,17 +7,6 @@ import { AlertCircle } from "lucide-react";
 
 const API_KEY = 'fzH38On1PdETgqb1EGiDKiUf7sjAmHqw';
 
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371;
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c * 0.621371;
-};
-
-const deg2rad = (deg) => deg * (Math.PI/180);
-
 const isInternational = (zip1, zip2) => {
   const usZipRegex = /^\d{5}(-\d{4})?$/;
   return !(usZipRegex.test(zip1) && usZipRegex.test(zip2));
@@ -34,17 +23,14 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const [originData, destData] = await Promise.all([
-        fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${origin}`).then(res => res.json()),
-        fetch(`https://www.mapquestapi.com/geocoding/v1/address?key=${API_KEY}&location=${destination}`).then(res => res.json())
-      ]);
+      const response = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${origin}&to=${destination}&unit=m`);
+      const data = await response.json();
       
-      if (originData.info.statuscode !== 0 || destData.info.statuscode !== 0) {
-        throw new Error('Error fetching location data');
+      if (data.info.statuscode !== 0) {
+        throw new Error('Error fetching route data');
       }
       
-      const [originLoc, destLoc] = [originData.results[0].locations[0].latLng, destData.results[0].locations[0].latLng];
-      const distance = Math.round(calculateDistance(originLoc.lat, originLoc.lng, destLoc.lat, destLoc.lng));
+      const distance = Math.round(data.route.distance);
       setMileage(distance);
       onSearch(origin, destination, distance, isInternational(origin, destination));
     } catch (error) {
