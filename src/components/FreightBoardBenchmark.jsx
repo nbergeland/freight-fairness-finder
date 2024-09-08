@@ -25,11 +25,12 @@ const fetchFreightBoardData = async (originZip, destinationZip, isInternational)
   const mileageData = await mileageResponse.json();
   const mileage = Math.round(mileageData.route.distance);
 
-  return { localFreightBoards, internationalShipping, mileage, isInternational };
+  const topCarrier = localFreightBoards.reduce((prev, current) => (prev.averageRate > current.averageRate) ? prev : current);
+
+  return { localFreightBoards, internationalShipping, mileage, isInternational, topCarrier };
 };
 
 const fetchInternationalShippingRates = async (originZip, destinationZip) => {
-  // Simulated API call for international shipping rates
   return [
     { name: 'Maersk', averageRate: 0.1 },
     { name: 'MSC', averageRate: 0.11 },
@@ -39,7 +40,7 @@ const fetchInternationalShippingRates = async (originZip, destinationZip) => {
   ];
 };
 
-export const FreightBoardBenchmark = ({ originZip, destinationZip, isInternational, onUpdateAverage }) => {
+export const FreightBoardBenchmark = ({ originZip, destinationZip, isInternational, onUpdateAverage, onUpdateTopCarrier }) => {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['freightBoards', originZip, destinationZip, isInternational],
     queryFn: () => fetchFreightBoardData(originZip, destinationZip, isInternational),
@@ -50,8 +51,9 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, isInternation
     if (data?.localFreightBoards) {
       const average = data.localFreightBoards.reduce((acc, board) => acc + board.averageRate, 0) / data.localFreightBoards.length;
       onUpdateAverage(average.toFixed(2));
+      onUpdateTopCarrier(data.topCarrier);
     }
-  }, [data, onUpdateAverage]);
+  }, [data, onUpdateAverage, onUpdateTopCarrier]);
 
   const renderFreightTable = (freightBoards, isInternational = false) => (
     <Table>

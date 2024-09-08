@@ -12,6 +12,7 @@ const Index = () => {
   const [mileage, setMileage] = useState(null);
   const [isInternational, setIsInternational] = useState(false);
   const [searchCount, setSearchCount] = useState(0);
+  const [topCarrier, setTopCarrier] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +24,10 @@ const Index = () => {
 
   const updateMarketAverage = (newAverage) => {
     setMarketAverage(newAverage);
+  };
+
+  const updateTopCarrier = (carrier) => {
+    setTopCarrier(carrier);
   };
 
   const handleZipCodeSearch = (origin, destination, distance, international) => {
@@ -43,7 +48,7 @@ const Index = () => {
     <div className="min-h-screen bg-gray-100 p-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Freight Rate Benchmarking</h1>
       <div className="max-w-4xl mx-auto">
-        <ZipCodeInput onSearch={handleZipCodeSearch} />
+        <ZipCodeInput onSearch={handleZipCodeSearch} topCarrier={topCarrier} />
         {searchCount < 1 ? (
           <>
             <FreightBoardBenchmark 
@@ -51,7 +56,8 @@ const Index = () => {
               destinationZip={destinationZip} 
               mileage={mileage}
               isInternational={isInternational}
-              onUpdateAverage={updateMarketAverage} 
+              onUpdateAverage={updateMarketAverage}
+              onUpdateTopCarrier={updateTopCarrier}
             />
             <RateComparison marketAverage={marketAverage} />
           </>

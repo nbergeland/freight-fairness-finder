@@ -23,7 +23,7 @@ const isInternational = (zip1, zip2) => {
   return !(usZipRegex.test(zip1) && usZipRegex.test(zip2));
 };
 
-export const ZipCodeInput = ({ onSearch }) => {
+export const ZipCodeInput = ({ onSearch, topCarrier }) => {
   const [originZip, setOriginZip] = useState('');
   const [destinationZip, setDestinationZip] = useState('');
   const [mileage, setMileage] = useState(null);
@@ -94,9 +94,16 @@ export const ZipCodeInput = ({ onSearch }) => {
           </Alert>
         )}
         {mileage !== null && (
-          <p className="mt-4">
-            Estimated mileage from {originZip} to {destinationZip}: <strong>{mileage} miles</strong>
-          </p>
+          <div className="mt-4">
+            <p>
+              Estimated mileage from {originZip} to {destinationZip}: <strong>{mileage} miles</strong>
+            </p>
+            {topCarrier && (
+              <p className="mt-2">
+                Top carrier: <strong>{topCarrier.name}</strong> with an average rate of <strong>${topCarrier.averageRate.toFixed(2)} per mile</strong>
+              </p>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>
