@@ -31,6 +31,8 @@ const fetchFreightBoardData = async (originZip, destinationZip, isInternational)
 };
 
 const fetchInternationalShippingRates = async (originZip, destinationZip) => {
+  // This function would typically make an API call to fetch international shipping rates
+  // For now, we'll return mock data
   return [
     { name: 'Maersk', averageRate: 0.1 },
     { name: 'MSC', averageRate: 0.11 },
