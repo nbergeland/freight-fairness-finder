@@ -41,6 +41,9 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
 
     try {
       const response = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${origin}&to=${destination}&unit=m`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
       const data = await response.json();
       
       if (data.info.statuscode !== 0) {
