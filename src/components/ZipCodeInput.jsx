@@ -23,6 +23,7 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
 
   useEffect(() => {
     setMileage(null);
+    setError(null);
   }, [originZip, destinationZip]);
 
   const fetchMileage = async (origin, destination) => {
@@ -42,7 +43,7 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
     try {
       const response = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${origin}&to=${destination}&unit=m`);
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
       
@@ -56,7 +57,7 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
       onSearch(origin, destination, distance, isInternational(origin, destination));
     } catch (error) {
       console.error('Error fetching mileage:', error);
-      setError(error.message);
+      setError(error.message || 'An error occurred while fetching the mileage.');
     } finally {
       setIsLoading(false);
     }
@@ -65,6 +66,8 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
   const handleSearch = () => {
     if (originZip && destinationZip) {
       fetchMileage(originZip, destinationZip);
+    } else {
+      setError('Please enter both origin and destination zip codes.');
     }
   };
 
