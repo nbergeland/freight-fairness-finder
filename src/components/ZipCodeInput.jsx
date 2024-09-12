@@ -7,16 +7,18 @@ import { AlertCircle } from "lucide-react";
 
 const API_KEY = 'fzH38On1PdETgqb1EGiDKiUf7sjAmHqw';
 
-const isInternational = (zip1, zip2) => {
+const isInternational = (location1, location2) => {
   const usZipRegex = /^\d{5}(-\d{4})?$/;
-  return !(usZipRegex.test(zip1) && usZipRegex.test(zip2));
+  return !(usZipRegex.test(location1) && usZipRegex.test(location2));
 };
 
 const getCacheKey = (origin, destination) => `distance_${origin}_${destination}`;
 
 export const ZipCodeInput = ({ onSearch, topCarrier }) => {
-  const [originZip, setOriginZip] = useState('');
-  const [destinationZip, setDestinationZip] = useState('');
+  const [originLocation, setOriginLocation] = useState('');
+  const [destinationLocation, setDestinationLocation] = useState('');
+  const [originCity, setOriginCity] = useState('');
+  const [destinationCity, setDestinationCity] = useState('');
   const [mileage, setMileage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,7 +26,7 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
   useEffect(() => {
     setMileage(null);
     setError(null);
-  }, [originZip, destinationZip]);
+  }, [originLocation, destinationLocation, originCity, destinationCity]);
 
   const fetchMileage = async (origin, destination) => {
     setIsLoading(true);
@@ -41,7 +43,9 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
     }
 
     try {
-      const response = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${origin}&to=${destination}&unit=m`);
+      const originQuery = originCity ? `${originCity},${origin}` : origin;
+      const destinationQuery = destinationCity ? `${destinationCity},${destination}` : destination;
+      const response = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${encodeURIComponent(originQuery)}&to=${encodeURIComponent(destinationQuery)}&unit=m`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -64,38 +68,54 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
   };
 
   const handleSearch = () => {
-    if (originZip && destinationZip) {
-      fetchMileage(originZip, destinationZip);
+    if ((originLocation || originCity) && (destinationLocation || destinationCity)) {
+      fetchMileage(originLocation || originCity, destinationLocation || destinationCity);
     } else {
-      setError('Please enter both origin and destination zip codes.');
+      setError('Please enter either zip code or city for both origin and destination.');
     }
   };
 
   return (
     <Card className="mb-8">
       <CardHeader>
-        <CardTitle>Zip Code to Zip Code Search</CardTitle>
+        <CardTitle>Location Search</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex mb-4">
-          <Input
-            type="text"
-            placeholder="Origin Zip Code"
-            value={originZip}
-            onChange={(e) => setOriginZip(e.target.value)}
-            className="mr-2"
-          />
-          <Input
-            type="text"
-            placeholder="Destination Zip Code"
-            value={destinationZip}
-            onChange={(e) => setDestinationZip(e.target.value)}
-            className="mr-2"
-          />
-          <Button onClick={handleSearch} disabled={isLoading}>
-            {isLoading ? 'Searching...' : 'Search'}
-          </Button>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <Input
+              type="text"
+              placeholder="Origin Zip Code"
+              value={originLocation}
+              onChange={(e) => setOriginLocation(e.target.value)}
+              className="mb-2"
+            />
+            <Input
+              type="text"
+              placeholder="Origin City (optional)"
+              value={originCity}
+              onChange={(e) => setOriginCity(e.target.value)}
+            />
+          </div>
+          <div>
+            <Input
+              type="text"
+              placeholder="Destination Zip Code"
+              value={destinationLocation}
+              onChange={(e) => setDestinationLocation(e.target.value)}
+              className="mb-2"
+            />
+            <Input
+              type="text"
+              placeholder="Destination City (optional)"
+              value={destinationCity}
+              onChange={(e) => setDestinationCity(e.target.value)}
+            />
+          </div>
         </div>
+        <Button onClick={handleSearch} disabled={isLoading} className="w-full">
+          {isLoading ? 'Searching...' : 'Search'}
+        </Button>
         {error && (
           <Alert variant="destructive" className="mt-4">
             <AlertCircle className="h-4 w-4" />
@@ -106,7 +126,7 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
         {mileage !== null && (
           <div className="mt-4">
             <p>
-              Estimated mileage from {originZip} to {destinationZip}: <strong>{mileage} miles</strong>
+              Estimated mileage from {originLocation || originCity} to {destinationLocation || destinationCity}: <strong>{mileage} miles</strong>
             </p>
             {topCarrier && (
               <p className="mt-2">

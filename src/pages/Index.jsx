@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [marketAverage, setMarketAverage] = useState(0);
-  const [originZip, setOriginZip] = useState('');
-  const [destinationZip, setDestinationZip] = useState('');
+  const [originLocation, setOriginLocation] = useState('');
+  const [destinationLocation, setDestinationLocation] = useState('');
   const [mileage, setMileage] = useState(null);
   const [isInternational, setIsInternational] = useState(false);
   const [searchCount, setSearchCount] = useState(0);
@@ -30,13 +30,13 @@ const Index = () => {
     setTopCarrier(carrier);
   };
 
-  const handleZipCodeSearch = (origin, destination, distance, international) => {
+  const handleLocationSearch = (origin, destination, distance, international) => {
     if (searchCount >= 1) {
       navigate('/signup');
       return;
     }
-    setOriginZip(origin);
-    setDestinationZip(destination);
+    setOriginLocation(origin);
+    setDestinationLocation(destination);
     setMileage(distance);
     setIsInternational(international);
     const newCount = searchCount + 1;
@@ -48,12 +48,12 @@ const Index = () => {
     <div className="min-h-screen bg-gray-100 p-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Freight Rate Benchmarking</h1>
       <div className="max-w-4xl mx-auto">
-        <ZipCodeInput onSearch={handleZipCodeSearch} topCarrier={topCarrier} />
+        <ZipCodeInput onSearch={handleLocationSearch} topCarrier={topCarrier} />
         {searchCount < 1 ? (
           <>
             <FreightBoardBenchmark 
-              originZip={originZip} 
-              destinationZip={destinationZip} 
+              originLocation={originLocation} 
+              destinationLocation={destinationLocation} 
               mileage={mileage}
               isInternational={isInternational}
               onUpdateAverage={updateMarketAverage}

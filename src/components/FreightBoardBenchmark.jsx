@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const API_KEY = 'fzH38On1PdETgqb1EGiDKiUf7sjAmHqw';
 
-const fetchFreightBoardData = async (originZip, destinationZip, isInternational) => {
+const fetchFreightBoardData = async (originLocation, destinationLocation, isInternational) => {
   const localFreightBoards = [
     { name: 'DAT', averageRate: 2.6 },
     { name: 'Truckstop.com', averageRate: 2.5 },
@@ -19,9 +19,9 @@ const fetchFreightBoardData = async (originZip, destinationZip, isInternational)
     { name: 'Getloaded.com', averageRate: 2.53 },
   ];
 
-  const internationalShipping = isInternational ? await fetchInternationalShippingRates(originZip, destinationZip) : [];
+  const internationalShipping = isInternational ? await fetchInternationalShippingRates(originLocation, destinationLocation) : [];
 
-  const mileageResponse = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${originZip}&to=${destinationZip}&unit=m`);
+  const mileageResponse = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${encodeURIComponent(originLocation)}&to=${encodeURIComponent(destinationLocation)}&unit=m`);
   const mileageData = await mileageResponse.json();
   const mileage = Math.round(mileageData.route.distance);
 
@@ -30,7 +30,7 @@ const fetchFreightBoardData = async (originZip, destinationZip, isInternational)
   return { localFreightBoards, internationalShipping, mileage, isInternational, topCarrier };
 };
 
-const fetchInternationalShippingRates = async (originZip, destinationZip) => {
+const fetchInternationalShippingRates = async (originLocation, destinationLocation) => {
   // This function would typically make an API call to fetch international shipping rates
   // For now, we'll return mock data
   return [
@@ -42,11 +42,11 @@ const fetchInternationalShippingRates = async (originZip, destinationZip) => {
   ];
 };
 
-export const FreightBoardBenchmark = ({ originZip, destinationZip, isInternational, onUpdateAverage, onUpdateTopCarrier }) => {
+export const FreightBoardBenchmark = ({ originLocation, destinationLocation, isInternational, onUpdateAverage, onUpdateTopCarrier }) => {
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['freightBoards', originZip, destinationZip, isInternational],
-    queryFn: () => fetchFreightBoardData(originZip, destinationZip, isInternational),
-    enabled: !!originZip && !!destinationZip,
+    queryKey: ['freightBoards', originLocation, destinationLocation, isInternational],
+    queryFn: () => fetchFreightBoardData(originLocation, destinationLocation, isInternational),
+    enabled: !!originLocation && !!destinationLocation,
   });
 
   React.useEffect(() => {
@@ -109,7 +109,7 @@ export const FreightBoardBenchmark = ({ originZip, destinationZip, isInternation
         </Tabs>
         <p className="mt-4">Estimated Mileage: {data.mileage} miles</p>
         <p className="mt-2">
-          For route: {originZip} to {destinationZip}
+          For route: {originLocation} to {destinationLocation}
         </p>
       </CardContent>
     </Card>
