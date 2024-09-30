@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
-const API_KEY = 'fzH38On1PdETgqb1EGiDKiUf7sjAmHqw';
+const API_KEY = 'AIzaSyBvzwAnBWhserQZpgzDSp5_P7gUz1GY9WU';
 
 const isInternational = (location1, location2) => {
   const usZipRegex = /^\d{5}(-\d{4})?$/;
@@ -45,17 +45,27 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
     try {
       const originQuery = originCity ? `${originCity},${origin}` : origin;
       const destinationQuery = destinationCity ? `${destinationCity},${destination}` : destination;
-      const response = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${encodeURIComponent(originQuery)}&to=${encodeURIComponent(destinationQuery)}&unit=m`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      
-      if (data.info.statuscode !== 0) {
-        throw new Error(data.info.messages[0] || 'Error fetching route data');
-      }
-      
-      const distance = Math.round(data.route.distance);
+
+      const service = new google.maps.DistanceMatrixService();
+      const response = await new Promise((resolve, reject) => {
+        service.getDistanceMatrix(
+          {
+            origins: [originQuery],
+            destinations: [destinationQuery],
+            travelMode: 'DRIVING',
+            unitSystem: google.maps.UnitSystem.IMPERIAL,
+          },
+          (response, status) => {
+            if (status === 'OK') {
+              resolve(response);
+            } else {
+              reject(new Error('Failed to calculate distance'));
+            }
+          }
+        );
+      });
+
+      const distance = Math.round(response.rows[0].elements[0].distance.value / 1609.34); // Convert meters to miles
       setMileage(distance);
       localStorage.setItem(cacheKey, distance.toString());
       onSearch(origin, destination, distance, isInternational(origin, destination));
