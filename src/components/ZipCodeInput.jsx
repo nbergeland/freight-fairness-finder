@@ -5,14 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
-const API_KEY = 'fzH38On1PdETgqb1EGiDKiUf7sjAmHqw';
-
-const isInternational = (location1, location2) => {
-  const usZipRegex = /^\d{5}(-\d{4})?$/;
-  return !(usZipRegex.test(location1) && usZipRegex.test(location2));
-};
-
-const getCacheKey = (origin, destination) => `distance_${origin}_${destination}`;
+const API_KEY = 'ChIJj61dQgK6j4AR4GeTYWZsKWw';
 
 export const ZipCodeInput = ({ onSearch, topCarrier }) => {
   const [originLocation, setOriginLocation] = useState('');
@@ -24,54 +17,54 @@ export const ZipCodeInput = ({ onSearch, topCarrier }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    setMileage(null);
-    setError(null);
-  }, [originLocation, destinationLocation, originCity, destinationCity]);
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`;
+    script.async = true;
+    document.body.appendChild(script);
 
-  const fetchMileage = async (origin, destination) => {
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const calculateDistance = (origin, destination) => {
+    return new Promise((resolve, reject) => {
+      const service = new google.maps.DistanceMatrixService();
+      service.getDistanceMatrix(
+        {
+          origins: [origin],
+          destinations: [destination],
+          travelMode: 'DRIVING',
+          unitSystem: google.maps.UnitSystem.IMPERIAL,
+        },
+        (response, status) => {
+          if (status === 'OK') {
+            const distance = response.rows[0].elements[0].distance.text;
+            resolve(parseFloat(distance.replace(' mi', '')));
+          } else {
+            reject('Error calculating distance');
+          }
+        }
+      );
+    });
+  };
+
+  const handleSearch = async () => {
     setIsLoading(true);
     setError(null);
 
-    const cacheKey = getCacheKey(origin, destination);
-    const cachedDistance = localStorage.getItem(cacheKey);
-
-    if (cachedDistance) {
-      setMileage(parseInt(cachedDistance, 10));
-      setIsLoading(false);
-      onSearch(origin, destination, parseInt(cachedDistance, 10), isInternational(origin, destination));
-      return;
-    }
-
     try {
-      const originQuery = originCity ? `${originCity},${origin}` : origin;
-      const destinationQuery = destinationCity ? `${destinationCity},${destination}` : destination;
-      const response = await fetch(`https://www.mapquestapi.com/directions/v2/route?key=${API_KEY}&from=${encodeURIComponent(originQuery)}&to=${encodeURIComponent(destinationQuery)}&unit=m`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      
-      if (data.info.statuscode !== 0) {
-        throw new Error(data.info.messages[0] || 'Error fetching route data');
-      }
-      
-      const distance = Math.round(data.route.distance);
+      const origin = originCity ? `${originCity}, ${originLocation}` : originLocation;
+      const destination = destinationCity ? `${destinationCity}, ${destinationLocation}` : destinationLocation;
+
+      const distance = await calculateDistance(origin, destination);
       setMileage(distance);
-      localStorage.setItem(cacheKey, distance.toString());
-      onSearch(origin, destination, distance, isInternational(origin, destination));
+      onSearch(origin, destination, distance, false); // Assuming domestic routes for simplicity
     } catch (error) {
-      console.error('Error fetching mileage:', error);
-      setError(error.message || 'An error occurred while fetching the mileage.');
+      console.error('Error fetching distance:', error);
+      setError(error.message || 'An error occurred while fetching the distance.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleSearch = () => {
-    if ((originLocation || originCity) && (destinationLocation || destinationCity)) {
-      fetchMileage(originLocation || originCity, destinationLocation || destinationCity);
-    } else {
-      setError('Please enter either zip code or city for both origin and destination.');
     }
   };
 
