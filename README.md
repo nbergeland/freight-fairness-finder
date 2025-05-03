@@ -33,6 +33,48 @@ RateComparison	Allows users to compare rates against market	User rate input, com
 # Component Relationships Diagram
 ![Screenshot](component.png)
 
+## 3. Data Flow
+The Freight Fairness Finder implements a unidirectional data flow pattern, where data flows from parent components to children via props, and children communicate back to parents through callback functions.
+
+# User Interaction Flow
+![Screenshot](flow.png)
+
+# State Management Flow
+![Screenshot](stateflow.png)
+
+
+## 4. API Integration
+
+The application integrates with external APIs to provide functionality for distance calculation and freight rate benchmarking.
+
+# External Service Integration
+![Screenshot](integration.png)
+
+## 5. Routing Architecture
+The application uses React Router for navigation between different pages, with a simple routing structure.
+![Screenshot](routing.png)
+
+
+## 6. Technical Implementation Details
+Core Dependencies
+The application relies on several key libraries to provide its functionality:
+
+Dependency	Purpose
+React	UI component framework
+React Router	Application routing
+React Query	Data fetching and caching
+shadcn/ui	UI component library
+MapQuest API	Distance calculation service
+
+# State Persistence
+The application uses browser's localStorage to persist search count information across sessions.
+
+![Screenshot](stateper.png)
+
+## 7. Rendering Logic
+The application conditionally renders components based on the user's search count, implementing the freemium model behavior directly in the component structure.
+
+![Screenshot](render.png)
 
 ## Key Features
 
