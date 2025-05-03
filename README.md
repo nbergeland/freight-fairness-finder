@@ -1,7 +1,5 @@
 # Freight Fairness Finder
 
-Detailed website explanation may be found at: https://deepwiki.com/nbergeland/freight-fairness-finder/1-overview#overview
-
 # Project Overview
 
 The Freight Fairness Finder is a React-based web application designed to help freight carriers and shippers compare rates across multiple freight boards and benchmark their rates against market averages. This document provides a high-level overview of the system architecture, core components, and data flow within the application.
@@ -137,6 +135,7 @@ To deploy the Freight Fairness Finder to a website, follow these steps:
 
 4. Configure your domain:
    Set up a custom domain if desired, following the instructions provided by your chosen hosting service.
+
 
 ## Contributing
 
