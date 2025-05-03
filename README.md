@@ -2,7 +2,7 @@
 
 Detailed website explanation may be found at: https://deepwiki.com/nbergeland/freight-fairness-finder/1-overview#overview
 
-## Project Overview
+# Project Overview
 
 The Freight Fairness Finder is a React-based web application designed to help freight carriers and shippers compare rates across multiple freight boards and benchmark their rates against market averages. This document provides a high-level overview of the system architecture, core components, and data flow within the application.
 
@@ -10,52 +10,52 @@ The Freight Fairness Finder is a React-based web application designed to help fr
 
 This page documents the overall architecture of the Freight Fairness Finder application, detailing its component structure, data flow patterns, and the relationships between different systems. 
 
-## 1. High Level Arcitecture
+# 1. High Level Arcitecture
 The Freight Fairness Finder is built as a single-page React application with a component-based architecture. The application follows a layered design pattern with clear separation between the user interface, business logic, and data access layers.
 
-# Application Layers
+## Application Layers
 ![Screenshot](layers.png)
 
-# Core System Components
+## Core System Components
 ![Screenshot](core.png)
 
-## 2. Component Architecture
+# 2. Component Architecture
 
 The application is structured around three main functional components, orchestrated by the Index page which serves as the main container and state manager.
 
-# Main Components and Responsibilities
+## Main Components and Responsibilities
 Component	Primary Responsibility	Data Handled
 Index Page	Central state management and component orchestration	Manages search state, location data, market rates
 ZipCodeInput	User input for locations and distance calculation	Origin/destination locations, mileage data
 FreightBoardBenchmark	Fetches and displays freight rate benchmarks	Freight board rates, carrier data
 RateComparison	Allows users to compare rates against market	User rate input, comparison results
 
-# Component Relationships Diagram
+## Component Relationships Diagram
 ![Screenshot](component.png)
 
-## 3. Data Flow
+# 3. Data Flow
 The Freight Fairness Finder implements a unidirectional data flow pattern, where data flows from parent components to children via props, and children communicate back to parents through callback functions.
 
-# User Interaction Flow
+## User Interaction Flow
 ![Screenshot](flow.png)
 
-# State Management Flow
+## State Management Flow
 ![Screenshot](stateflow.png)
 
 
-## 4. API Integration
+# 4. API Integration
 
 The application integrates with external APIs to provide functionality for distance calculation and freight rate benchmarking.
 
-# External Service Integration
+## External Service Integration
 ![Screenshot](integration.png)
 
-## 5. Routing Architecture
+# 5. Routing Architecture
 The application uses React Router for navigation between different pages, with a simple routing structure.
 ![Screenshot](routing.png)
 
 
-## 6. Technical Implementation Details
+# 6. Technical Implementation Details
 Core Dependencies
 The application relies on several key libraries to provide its functionality:
 
@@ -66,12 +66,12 @@ React Query	Data fetching and caching
 shadcn/ui	UI component library
 MapQuest API	Distance calculation service
 
-# State Persistence
+## State Persistence
 The application uses browser's localStorage to persist search count information across sessions.
 
 ![Screenshot](stateper.png)
 
-## 7. Rendering Logic
+# 7. Rendering Logic
 The application conditionally renders components based on the user's search count, implementing the freemium model behavior directly in the component structure.
 
 ![Screenshot](render.png)
@@ -141,7 +141,3 @@ To deploy the Freight Fairness Finder to a website, follow these steps:
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
