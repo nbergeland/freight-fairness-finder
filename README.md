@@ -1,8 +1,38 @@
 # Freight Fairness Finder
 
+Detailed website explanation may be found at: https://deepwiki.com/nbergeland/freight-fairness-finder/1-overview#overview
+
 ## Project Overview
 
-Freight Fairness Finder is a React-based web application designed to help freight carriers and shippers compare rates across multiple freight boards and benchmark their own rates against market averages. This tool provides valuable insights into the current freight market, helping users make informed decisions about pricing and route selection.
+The Freight Fairness Finder is a React-based web application designed to help freight carriers and shippers compare rates across multiple freight boards and benchmark their rates against market averages. This document provides a high-level overview of the system architecture, core components, and data flow within the application.
+
+# System Architecture
+
+This page documents the overall architecture of the Freight Fairness Finder application, detailing its component structure, data flow patterns, and the relationships between different systems. 
+
+## 1. High Level Arcitecture
+The Freight Fairness Finder is built as a single-page React application with a component-based architecture. The application follows a layered design pattern with clear separation between the user interface, business logic, and data access layers.
+
+# Application Layers
+![Screenshot](layers.png)
+
+# Core System Components
+![Screenshot](core.png)
+
+## 2. Component Architecture
+
+The application is structured around three main functional components, orchestrated by the Index page which serves as the main container and state manager.
+
+# Main Components and Responsibilities
+Component	Primary Responsibility	Data Handled
+Index Page	Central state management and component orchestration	Manages search state, location data, market rates
+ZipCodeInput	User input for locations and distance calculation	Origin/destination locations, mileage data
+FreightBoardBenchmark	Fetches and displays freight rate benchmarks	Freight board rates, carrier data
+RateComparison	Allows users to compare rates against market	User rate input, comparison results
+
+# Component Relationships Diagram
+![Screenshot](component.png)
+
 
 ## Key Features
 
