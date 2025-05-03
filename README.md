@@ -1,4 +1,5 @@
 # Freight Fairness Finder
+Available publicly @ WWW.FAIRFREIGHT.AI
 
 # Project Overview
 
