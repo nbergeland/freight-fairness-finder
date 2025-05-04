@@ -75,7 +75,7 @@ The application conditionally renders components based on the user's search coun
 
 ![Screenshot](render.png)
 
-## Key Features Include:
+# Key Features Include:
 
 1. **Zip Code to Zip Code Search**: Users can input origin and destination zip codes to calculate estimated mileage for their route.
 
