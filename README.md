@@ -89,6 +89,7 @@ The application conditionally renders components based on the user's search coun
    - uShip
    - Getloaded.com
 
+**Important: User will need API keys setup for these websites.**
 3. **Rate Comparison**: Users can compare their own rates against the calculated market average.
 
 4. **Mileage Calculation**: The app uses the MapQuest API to calculate accurate mileage between zip codes.
